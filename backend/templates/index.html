@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juez Logit</title>
+
+    <style>
+        :root {
+            --primary: #00c6ff;
+            --secondary: #0072ff;
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --input-bg: #0f172a;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --border: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 32px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 850px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 25px;
+            font-weight: 800;
+        }
+
+        .status-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status-bar,
+        .record-box {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 12px 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent-red);
+            transition: all 0.3s ease;
+        }
+
+        .dot.ready {
+            background: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-green);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .robot-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .robot-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 5px;
+            margin-top: 10px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+
+        input[type="file"]::file-selector-button {
+            background: var(--border);
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: background 0.2s;
+        }
+
+        button {
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        #btnSubmit {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.3);
+        }
+
+        #btnSubmit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: rgba(51, 65, 85, 0.5);
+            color: white;
+            width: 100%;
+        }
+
+        .result-card {
+            background: linear-gradient(145deg, rgba(16, 185, 129, 0.1), rgba(0, 0, 0, 0.2));
+            border: 1px solid var(--accent-green);
+            border-radius: 16px;
+            padding: 30px 24px;
+            margin: 25px 0;
+            text-align: center;
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.15);
+        }
+
+        .winner-name {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            margin: 15px 0;
+        }
+
+        .trophy {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stats-grid {
+            display: flex;
+            justify-content: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        details {
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+
+        summary {
+            padding: 12px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        pre {
+            background: #000;
+            padding: 15px;
+            color: #10b981;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            border-top: 1px solid var(--border);
+            white-space: pre-wrap;
+        }
+
+        .table-container {
+            margin-top: 20px;
+            display: none;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+
+        .error {
+            color: var(--accent-red);
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid var(--border);
+            margin: 25px 0;
+        }
+
+        @media (max-width: 768px) {
+            .status-container,
+            .robot-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .winner-name {
+                font-size: 2rem;
+            }
+        }
+    </style>
+
+    <script>
+        let raspberryInterval;
+        let recordingInterval;
+
+        function checkRaspberryStatus() {
+            const dot = document.getElementById("statusDot");
+            const text = document.getElementById("statusText");
+            const btn = document.getElementById("btnSubmit");
+            const videoInput = document.querySelector('input[name="video"]');
+
+            fetch("/check_status")
+                .then(res => res.json())
+                .then(data => {
+                    const videoLocal = videoInput && videoInput.files.length > 0;
+
+                    if (data.ready) {
+                        dot.classList.add("ready");
+                        text.innerText = `Video: ${data.video} (${data.hora})`;
+                    } else {
+                        dot.classList.remove("ready");
+                        text.innerText = "Esperando video...";
+                    }
+
+                    btn.disabled = !(data.ready || videoLocal);
+                })
+                .catch(() => {
+                    const videoLocal = videoInput && videoInput.files.length > 0;
+                    dot.classList.remove("ready");
+                    text.innerText = "Sin conexión";
+                    btn.disabled = !videoLocal;
+                });
+        }
+
+        function checkRecordingStatus() {
+            const status = document.getElementById("recordingStatus");
+
+            fetch("/recording_status")
+                .then(res => res.json())
+                .then(data => {
+                    if (data.recording && data.paused) {
+                        status.innerText = "⏸️ GRABACIÓN PAUSADA";
+                        status.style.color = "#f59e0b";
+                    } else if (data.recording) {
+                        status.innerText = "• GRABANDO EN VIVO";
+                        status.style.color = "var(--accent-red)";
+                    } else {
+                        status.innerText = "Grabación detenida";
+                        status.style.color = "var(--text-dim)";
+                    }
+                })
+                .catch(() => {
+                    status.innerText = "Sin conexión";
+                    status.style.color = "var(--text-dim)";
+                });
+        }
+
+        function startRecording() {
+            fetch("/start_recording").then(() => checkRecordingStatus());
+        }
+
+        function pauseRecording() {
+            fetch("/pause_recording").then(() => checkRecordingStatus());
+        }
+
+        function resumeRecording() {
+            fetch("/resume_recording").then(() => checkRecordingStatus());
+        }
+
+        function stopRecording() {
+            fetch("/stop_recording").then(() => checkRecordingStatus());
+        }
+
+        function toggleControl() {
+            const box = document.getElementById("controlBox");
+            box.style.display = box.style.display === "none" ? "block" : "none";
+        }
+
+        function toggleHistorial() {
+            const tableBox = document.getElementById("tablaHistorial");
+
+            if (tableBox.style.display === "block") {
+                tableBox.style.display = "none";
+                return;
+            }
+
+            fetch("/historial")
+                .then(res => res.json())
+                .then(data => {
+                    tableBox.style.display = "block";
+                    const tbody = document.getElementById("bodyHistorial");
+                    tbody.innerHTML = "";
+
+                    if (data.length === 0) {
+                        tbody.innerHTML = "<tr><td colspan='4'>No hay datos</td></tr>";
+                        return;
+                    }
+
+                    data.forEach(item => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${item.robot_a}</td>
+                                <td>${item.robot_b}</td>
+                                <td style="color:var(--accent-green); font-weight:bold;">
+                                    ${item.ganador}
+                                </td>
+                                <td>${item.tiempo}s</td>
+                            </tr>`;
+                    });
+                });
+        }
+
+        function limpiarFormulario() {
+            const form = document.getElementById("combatForm");
+            if (!form) return;
+
+            form.querySelectorAll('input[type="text"]').forEach(input => {
+                input.value = "";
+            });
+
+            form.querySelectorAll('input[type="file"]').forEach(input => {
+                input.value = "";
+            });
+        }
+
+        function iniciarMonitoreo() {
+            raspberryInterval = setInterval(checkRaspberryStatus, 3000);
+            recordingInterval = setInterval(checkRecordingStatus, 2000);
+        }
+
+        function detenerMonitoreo() {
+            clearInterval(raspberryInterval);
+            clearInterval(recordingInterval);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("combatForm");
+            const videoInput = document.querySelector('input[name="video"]');
+            const btn = document.getElementById("btnSubmit");
+
+            btn.disabled = true;
+
+            if (sessionStorage.getItem("limpiarFormulario") === "true") {
+                limpiarFormulario();
+                sessionStorage.removeItem("limpiarFormulario");
+            }
+
+            if (videoInput) {
+                videoInput.addEventListener("change", function () {
+                    if (this.files.length > 0) {
+                        btn.disabled = false;
+                    } else {
+                        checkRaspberryStatus();
+                    }
+                });
+            }
+
+            if (form) {
+                form.addEventListener("submit", function () {
+                    // Detener consultas automáticas mientras se analiza.
+                    detenerMonitoreo();
+
+                    // Evitar doble envío.
+                    btn.disabled = true;
+                    btn.innerText = "Analizando...";
+
+                    // Limpiar formulario al recargar la página.
+                    sessionStorage.setItem("limpiarFormulario", "true");
+                });
+            }
+
+            checkRaspberryStatus();
+            checkRecordingStatus();
+            iniciarMonitoreo();
+        });
+    </script>
+</head>
+
+<body>
+<div class="container">
+    <h1>Juez Logit</h1>
+
+    <div class="status-container">
+        <div class="status-bar">
+            <div id="statusDot" class="dot"></div>
+            <span id="statusText">Conectando...</span>
+        </div>
+        <div class="record-box">
+            <span id="recordingStatus">Estado...</span>
+        </div>
+    </div>
+
+    <button type="button" onclick="toggleControl()" class="btn-secondary">
+        Controles de Grabación
+    </button>
+
+    <div id="controlBox" style="display:none; margin-top:10px;">
+        <div class="controls" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+            <button type="button"
+                    style="background: var(--accent-green); color: white; flex:1"
+                    onclick="startRecording()">
+                Iniciar
+            </button>
+
+            <button type="button"
+                    style="background: #f59e0b; color: white; flex:1"
+                    onclick="pauseRecording()">
+                Pausar
+            </button>
+
+            <button type="button"
+                    style="background: #3b82f6; color: white; flex:1"
+                    onclick="resumeRecording()">
+                Reanudar
+            </button>
+
+            <button type="button"
+                    style="background: var(--accent-red); color: white; flex:1"
+                    onclick="stopRecording()">
+                Detener
+            </button>
+        </div>
+    </div>
+
+    <form id="combatForm"
+          action="/analyze"
+          method="post"
+          enctype="multipart/form-data"
+          autocomplete="off">
+
+        <div class="robot-grid">
+            <div class="robot-section">
+                <input type="text" name="robot_a" placeholder="Robot A" required>
+
+                <label class="label">Imagen Inicio</label>
+                <input type="file" name="img_a_inicio" accept="image/*">
+
+                <label class="label">Imagen Final</label>
+                <input type="file" name="img_a_final" accept="image/*">
+            </div>
+
+            <div class="robot-section">
+                <input type="text" name="robot_b" placeholder="Robot B" required>
+
+                <label class="label">Imagen Inicio</label>
+                <input type="file" name="img_b_inicio" accept="image/*">
+
+                <label class="label">Imagen Final</label>
+                <input type="file" name="img_b_final" accept="image/*">
+            </div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.03);
+                    padding: 15px;
+                    border-radius: 12px;
+                    border: 1px dashed var(--border);">
+            <label class="label" style="margin-top:0">
+                Video del combate (MP4)
+            </label>
+            <input type="file" name="video" accept="video/mp4">
+        </div>
+
+        <button type="submit" id="btnSubmit">
+            Analizar Combate
+        </button>
+    </form>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    {% if response %}
+        <hr>
+        <div class="result-card">
+            <span class="trophy">🏆</span>
+            <p class="label" style="margin:0">Ganador del Combate</p>
+            <h3 class="winner-name">{{ ganador }}</h3>
+
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Duración</span>
+                    <span class="stat-value">{{ tiempo }}s</span>
+                </div>
+            </div>
+
+            <details>
+                <summary>Ver detalles del análisis técnico</summary>
+                <pre>{{ response }}</pre>
+            </details>
+        </div>
+    {% endif %}
+
+    <button type="button"
+            onclick="toggleHistorial()"
+            class="btn-secondary"
+            style="margin-top: 20px; background: transparent; border: 1px solid var(--border);">
+        Ver historial de combates
+    </button>
+
+    <div id="tablaHistorial" class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Robot A</th>
+                    <th>Robot B</th>
+                    <th>Ganador</th>
+                    <th>Tiempo</th>
+                </tr>
+            </thead>
+            <tbody id="bodyHistorial"></tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
