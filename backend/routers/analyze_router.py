@@ -12,24 +12,20 @@ from database import save_analysis, get_historial
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
-
-# Variables que existen
-
+# Variables globales
 LAST_VIDEO_TIME = None
 LAST_VIDEO_NAME = None
 
 IS_RECORDING = False
 IS_PAUSED = False
 
-
-# se crea la carpeta por si no existe
-
+# Crear carpeta de videos si no existe
 os.makedirs("videos", exist_ok=True)
 
 
-
-# verificacion si hay video
-
+# =========================
+# VERIFICAR SI HAY VIDEO
+# =========================
 @router.get("/check_status")
 def check_status():
     global LAST_VIDEO_TIME, LAST_VIDEO_NAME
@@ -44,9 +40,9 @@ def check_status():
     }
 
 
-
-# inicio de grabacion
-
+# =========================
+# INICIAR GRABACIÓN
+# =========================
 @router.get("/start_recording")
 def start_recording():
     global IS_RECORDING, IS_PAUSED
@@ -63,9 +59,9 @@ def start_recording():
     }
 
 
-
-# pausar
-
+# =========================
+# PAUSAR GRABACIÓN
+# =========================
 @router.get("/pause_recording")
 def pause_recording():
     global IS_RECORDING, IS_PAUSED
@@ -82,9 +78,9 @@ def pause_recording():
     }
 
 
-
-# reanudar
-
+# =========================
+# REANUDAR GRABACIÓN
+# =========================
 @router.get("/resume_recording")
 def resume_recording():
     global IS_RECORDING, IS_PAUSED
@@ -101,9 +97,9 @@ def resume_recording():
     }
 
 
-
-# detener
-
+# =========================
+# DETENER GRABACIÓN
+# =========================
 @router.get("/stop_recording")
 def stop_recording():
     global IS_RECORDING, IS_PAUSED
@@ -120,9 +116,9 @@ def stop_recording():
     }
 
 
-
-# estado de la grabacion
-
+# =========================
+# ESTADO DE GRABACIÓN
+# =========================
 @router.get("/recording_status")
 def recording_status():
     return {
@@ -131,9 +127,9 @@ def recording_status():
     }
 
 
-
-# subir video de la raspberry 
-
+# =========================
+# SUBIR VIDEO DESDE RASPBERRY
+# =========================
 @router.post("/upload")
 async def upload_video(video: UploadFile = File(...)):
     global LAST_VIDEO_TIME, LAST_VIDEO_NAME
@@ -153,9 +149,9 @@ async def upload_video(video: UploadFile = File(...)):
     return {"mensaje": "ok"}
 
 
-
-# convertir a base64
-
+# =========================
+# CONVERTIR ARCHIVO A BASE64
+# =========================
 def file_to_base64(file: UploadFile):
     if file and file.filename:
         data = file.file.read()
@@ -163,9 +159,9 @@ def file_to_base64(file: UploadFile):
     return None, None
 
 
-
-# analizar video e imagenes
-
+# =========================
+# ANALIZAR VIDEO E IMÁGENES
+# =========================
 @router.post("/analyze")
 async def analyze(
     request: Request,
@@ -178,9 +174,15 @@ async def analyze(
     img_b_inicio: UploadFile = File(None),
     img_b_final: UploadFile = File(None),
 ):
+    global LAST_VIDEO_NAME, LAST_VIDEO_TIME
+
     try:
-        # Si el usuario sube un video manualmente
+        # Si el usuario sube un video manualmente,
+        # desactivar cualquier video detectado automáticamente en la Raspberry.
         if video and video.filename:
+            LAST_VIDEO_NAME = None
+            LAST_VIDEO_TIME = None
+
             filename = f"fight_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
             path = f"videos/{filename}"
 
@@ -268,6 +270,11 @@ async def analyze(
     except Exception as e:
         print("Error guardando:", e)
 
+    # Limpiar estado del último video para que
+    # no siga apareciendo en la interfaz
+    LAST_VIDEO_NAME = None
+    LAST_VIDEO_TIME = None
+
     # Mostrar resultado
     return templates.TemplateResponse(
         "index.html",
@@ -280,9 +287,9 @@ async def analyze(
     )
 
 
-
-# historial
-
+# =========================
+# HISTORIAL
+# =========================
 @router.get("/historial")
 def historial():
     return get_historial()

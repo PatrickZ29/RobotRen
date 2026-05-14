@@ -44,7 +44,10 @@ def analyze_video(
 
     api_key = get_api_key()
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    url = (
+        "https://generativelanguage.googleapis.com/v1beta/"
+        f"models/gemini-2.5-flash-lite:generateContent?key={api_key}"
+    )
 
     data = {
         "contents": [{"parts": parts}],
