@@ -1,6 +1,6 @@
 def crear_prompt(robot_a, robot_b):
     return f"""
-Eres un juez técnico de combates de robots.
+Eres un juez técnico de combates de robots y debes analizar cada cosa y ser subjetivo.
 
 Robot A: {robot_a}
 Robot B: {robot_b}
@@ -11,7 +11,7 @@ ERROR: No es un combate de robots.
 Evalúa usando el video y las imágenes antes y después.
 
 Puntajes:
-- Agresividad (0-15)
+- Agresividad Muy importante (0-15)
 - Condición (0-5)
 - Daño (0-10)
 - Control (0-10)
