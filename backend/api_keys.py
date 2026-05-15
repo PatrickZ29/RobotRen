@@ -1,4 +1,4 @@
-API_KEY = "AIzaSyB61LaPzOLysBap-oTc0PWKlUOxQZtKS5U"
+API_KEY = "-CUH3Pe1le04x8iianL75GcJKs4ATwBM"
 
 def get_api_key():
     if not API_KEY:
