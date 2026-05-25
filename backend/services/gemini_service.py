@@ -13,23 +13,13 @@ def analyze_video(
     img_bi_b64=None, img_bi_type=None,
     img_bf_b64=None, img_bf_type=None
 ):
-
-    # Leer y convertir el video a Base64
     with open(video_path, "rb") as f:
         video_base64 = base64.b64encode(f.read()).decode()
 
-    # Partes del prompt
-    parts = [
-        {"text": crear_prompt(robot_a, robot_b)},
-        {
-            "inline_data": {
-                "mime_type": mime,
-                "data": video_base64
-            }
-        }
-    ]
+    parts = []
 
-    # Función para agregar imágenes opcionales
+    # ── BLOQUE 1: imágenes de referencia ANTES del prompt ──
+    # Gemini las ancla en memoria antes de recibir instrucciones.
     def add_image(label, b64, mime_type):
         if b64:
             parts.append({"text": label})
@@ -40,25 +30,48 @@ def analyze_video(
                 }
             })
 
-    # Agregar imágenes si existen
-    add_image("Imagen inicial Robot A", img_ai_b64, img_ai_type)
-    add_image("Imagen final Robot A", img_af_b64, img_af_type)
-    add_image("Imagen inicial Robot B", img_bi_b64, img_bi_type)
-    add_image("Imagen final Robot B", img_bf_b64, img_bf_type)
+    add_image(
+        f"REFERENCIA_A_INICIO: Esta es la foto de {robot_a} antes del combate. "
+        f"Memoriza su apariencia exacta: color, forma, arma y cualquier detalle único.",
+        img_ai_b64, img_ai_type
+    )
+    add_image(
+        f"REFERENCIA_B_INICIO: Esta es la foto de {robot_b} antes del combate. "
+        f"Memoriza su apariencia exacta: color, forma, arma y cualquier detalle único.",
+        img_bi_b64, img_bi_type
+    )
 
-    # API Key
+    # ── BLOQUE 2: prompt con instrucciones ──
+    parts.append({"text": crear_prompt(robot_a, robot_b)})
+
+    # ── BLOQUE 3: video del combate ──
+    parts.append({
+        "inline_data": {
+            "mime_type": mime,
+            "data": video_base64
+        }
+    })
+
+
+    add_image(
+        f"REFERENCIA_A_FINAL: Estado de {robot_a} al terminar el combate. "
+        f"Úsala para evaluar Condición en el Criterio 2.",
+        img_af_b64, img_af_type
+    )
+    add_image(
+        f"REFERENCIA_B_FINAL: Estado de {robot_b} al terminar el combate. "
+        f"Úsala para evaluar Condición en el Criterio 2.",
+        img_bf_b64, img_bf_type
+    )
+
     api_key = get_api_key()
+    model = "gemini-3.1-flash-lite"  
 
-    # Modelo Gemini 3.1 Flash Lite
-    model = "gemini-3.1-flash-lite"
-
-    # URL de la API
     url = (
         "https://generativelanguage.googleapis.com/v1beta/"
         f"models/{model}:generateContent?key={api_key}"
     )
 
-    # Datos de la solicitud
     data = {
         "contents": [
             {
@@ -72,7 +85,6 @@ def analyze_video(
         }
     }
 
-    # Medir tiempo de respuesta
     inicio = time.time()
 
     try:
@@ -83,5 +95,4 @@ def analyze_video(
         return {"error": str(e)}, 0
 
     tiempo = round(time.time() - inicio, 2)
-
     return res_json, tiempo
