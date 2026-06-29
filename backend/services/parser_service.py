@@ -6,7 +6,7 @@ def parse_result(texto, robot_a, robot_b):
         return {"error": "Respuesta vacía"}
 
     try:
-        # 🔥 Escapar nombres por seguridad
+        
         robot_a_esc = re.escape(robot_a)
         robot_b_esc = re.escape(robot_b)
 
@@ -14,10 +14,10 @@ def parse_result(texto, robot_a, robot_b):
             m = re.search(patron, texto, re.IGNORECASE | re.DOTALL)
             return m.group(1).strip() if m else "-"
 
-        # 🔥 GANADOR más robusto
+        
         ganador = buscar(r"GANADOR\s*:\s*([A-Za-z0-9_ ]+)")
 
-        # 🔥 Función para cada robot
+        
         def parse_robot(nombre_esc):
             return {
                 "agresividad": buscar(rf"{nombre_esc}.*?Agresividad\s*:\s*(\d+)"),

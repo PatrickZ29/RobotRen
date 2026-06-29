@@ -23,9 +23,7 @@ IS_PAUSED = False
 os.makedirs("videos", exist_ok=True)
 
 
-# =========================
-# VERIFICAR SI HAY VIDEO
-# =========================
+
 @router.get("/check_status")
 def check_status():
     global LAST_VIDEO_TIME, LAST_VIDEO_NAME
@@ -40,9 +38,6 @@ def check_status():
     }
 
 
-# =========================
-# INICIAR GRABACIÓN
-# =========================
 @router.get("/start_recording")
 def start_recording():
     global IS_RECORDING, IS_PAUSED
@@ -59,9 +54,7 @@ def start_recording():
     }
 
 
-# =========================
-# PAUSAR GRABACIÓN
-# =========================
+
 @router.get("/pause_recording")
 def pause_recording():
     global IS_RECORDING, IS_PAUSED
@@ -116,9 +109,7 @@ def stop_recording():
     }
 
 
-# =========================
-# ESTADO DE GRABACIÓN
-# =========================
+
 @router.get("/recording_status")
 def recording_status():
     return {
@@ -127,9 +118,7 @@ def recording_status():
     }
 
 
-# =========================
-# SUBIR VIDEO DESDE RASPBERRY
-# =========================
+
 @router.post("/upload")
 async def upload_video(video: UploadFile = File(...)):
     global LAST_VIDEO_TIME, LAST_VIDEO_NAME

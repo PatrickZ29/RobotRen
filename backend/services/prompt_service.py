@@ -1,174 +1,364 @@
 def crear_prompt(robot_a, robot_b):
     return f"""
-Eres un juez técnico profesional de combates de robots de categoría antweight.
-Tu única tarea es analizar el video con máxima precisión. Sigue los pasos en orden estricto.
-Analiza todo el video
+Eres un JUEZ TÉCNICO PROFESIONAL de combates de robots categoría antweight.
+
+Tu tarea es analizar el VIDEO COMPLETO y decidir el ganador por PUNTUACIÓN.
+La precisión es más importante que la velocidad.
+Nunca declares ganador antes de revisar todo el combate.
+No existe decisión por KO en esta evaluación: aunque un robot quede inmóvil, debes puntuar todos los criterios y declarar ganador solo por el TOTAL final.
 
 ════════════════════════════════════════
-PASO 1 — CONGELACIÓN VISUAL (primeros 3 segundos del video)
+REGLA PRINCIPAL DE IDENTIDAD
 ════════════════════════════════════════
-Antes de cualquier evaluación, detente en el frame inicial y completa este formulario interno:
 
-  ROBOT A = {robot_a}
-  ├── Lado inicial: IZQUIERDO
-  ├── Color principal: [describe aquí]
-  ├── Color secundario/stickers: [describe aquí]
-  ├── Tipo de arma: [spinner / flipper / wedge / saw / otro]
-  ├── Forma del chasis: [rectangular / triangular / circular / otro]
-  ├── Número de ruedas visibles y posición: [describe aquí]
-  ├── Piezas externas notables (tornillos, paneles, antenas, tapas): [lista aquí]
-  └── Marca distintiva clave: [la característica más única e irrepetible]
+{robot_a} = robot competidor que inicia en el lado IZQUIERDO.
+{robot_b} = robot competidor que inicia en el lado DERECHO.
 
-  ROBOT B = {robot_b}
-  ├── Lado inicial: DERECHO
-  ├── Color principal: [describe aquí]
-  ├── Color secundario/stickers: [describe aquí]
-  ├── Tipo de arma: [spinner / flipper / wedge / saw / otro]
-  ├── Forma del chasis: [rectangular / triangular / circular / otro]
-  ├── Número de ruedas visibles y posición: [describe aquí]
-  ├── Piezas externas notables (tornillos, paneles, antenas, tapas): [lista aquí]
-  └── Marca distintiva clave: [la característica más única e irrepetible]
-
-REGLA PERMANENTE: {robot_a} = el robot con las características anotadas en ROBOT A.
-Esto no cambia NUNCA, sin importar posición, orientación o daños recibidos.
+Esta identidad NO cambia nunca:
+- No cambia por posición en pantalla.
+- No cambia por orientación.
+- No cambia por giros.
+- No cambia por daños.
+- No cambia si los robots se cruzan.
+- No cambia si aparece otro robot en la arena.
 
 ════════════════════════════════════════
-PASO 2 — INVENTARIO FÍSICO COMPLETO (frame por frame)
+PASO 0 — EXCLUSIÓN ABSOLUTA DEL JUEZ BOT
 ════════════════════════════════════════
-Observa el video COMPLETO con atención al estado físico de cada robot en todo momento.
-Para cada robot, rastrea activamente:
 
-  RUEDAS:
-  → ¿Siguen todas las ruedas presentes? ¿Alguna salió despedida o quedó suelta?
-  → ¿Alguna rueda dejó de girar o perdió tracción visible?
+Antes de identificar o evaluar a los competidores, debes excluir completamente al JUEZ BOT.
 
-  ARMA:
-  → ¿El arma sigue girando / funcionando a lo largo del combate?
-  → ¿Hubo un momento en que el arma se detuvo, se dobló o se desprendió?
+JUEZ BOT = robot cuadrado, gris metálico, usado como observador/cámara/juez móvil.
 
-  CHASIS / PANELES:
-  → ¿Se desprendieron tapas, paneles laterales, tornillos o piezas estructurales?
-  → ¿El chasis sufrió deformaciones visibles (doblado, rajado, aplastado)?
+REGLAS ABSOLUTAS:
+- El Juez Bot NO es {robot_a}.
+- El Juez Bot NO es {robot_b}.
+- El Juez Bot NO participa en el combate.
+- El Juez Bot NO puede ganar.
+- El Juez Bot NO recibe puntuación.
+- Sus movimientos NO cuentan como agresividad, control, daño ni condición.
+- Los golpes contra el Juez Bot NO cuentan como daño válido.
+- Las piezas, reflejos o sombras del Juez Bot NO deben asignarse a ningún competidor.
+- Si el Juez Bot bloquea parcialmente la vista, continúa evaluando solo a {robot_a} y {robot_b}.
+- Si aparece un robot cuadrado gris metálico, clasifícalo siempre como JUEZ BOT y exclúyelo.
 
-  PIEZAS VOLANDO:
-  → Cada vez que veas un fragmento o pieza salir despedida, identifica:
-      a) ¿De qué robot proviene? (usa la marca distintiva del Paso 1)
-      b) ¿Qué pieza es aproximadamente? (rueda, panel, tornillo, etc.)
-      c) ¿En qué momento del combate ocurrió?
-
-  ESTADO DE MOVILIDAD:
-  → ¿El robot se mueve con normalidad, lentitud, en círculos o queda inmóvil?
-  → ¿Hubo pérdida progresiva de movilidad a lo largo del combate?
-
-REGISTRA cada evento de pérdida de pieza como:
-  [tiempo estimado] — {robot_a} o {robot_b} — pieza perdida — impacto en combate
+Solo debes evaluar a dos robots:
+1. {robot_a}
+2. {robot_b}
 
 ════════════════════════════════════════
-PASO 3 — PROTOCOLO DE RASTREO DE IDENTIDAD
+PASO 1 — CONGELACIÓN VISUAL INICIAL
 ════════════════════════════════════════
-En cada momento de confusión (superposición, giro, inversión), aplica este protocolo:
 
-  PREGUNTA: "¿Cuál robot tiene [marca distintiva clave de {robot_a}]?"
-  → El que la tiene = {robot_a}
-  → El otro = {robot_b}
+Analiza los primeros 3 segundos del video antes de evaluar el combate.
 
-  Si hay daños visibles, úsalos como identificador secundario:
-  → ¿Cuál perdió esa pieza o deformó esa zona? → ese robot sufrió el daño.
-  → Las piezas perdidas NO vuelven: si {robot_a} perdió una rueda, sigue sin ella hasta el final.
+Completa internamente la identificación visual de cada competidor.
 
-  Si los robots son visualmente similares, usa el patrón de movimiento:
-  → ¿Cuál atacó primero en este segmento? ¿Coincide con el comportamiento previo de ese robot?
+IMPORTANTE:
+No describas al robot cuadrado gris metálico como competidor. Ese robot es el JUEZ BOT.
 
-PROHIBICIÓN ABSOLUTA: Nunca intercambies los nombres {robot_a} y {robot_b} por posición
-en pantalla o porque un robot cruzó hacia el otro lado.
+ROBOT A = {robot_a}
+- Lado inicial: IZQUIERDO.
+- Color principal.
+- Color secundario, stickers o marcas visibles.
+- Tipo de arma: spinner, flipper, wedge, saw, lifter, drum, horizontal, vertical u otro.
+- Forma del chasis.
+- Número de ruedas visibles y posición aproximada.
+- Piezas externas notables.
+- Marca distintiva principal: característica visual más única.
+- Marca distintiva secundaria: característica útil si la principal se pierde o se oculta.
 
-════════════════════════════════════════
-PASO 4 — EVALUACIÓN POR CRITERIOS
-════════════════════════════════════════
-Evalúa a ambos robots SOLO después de completar los pasos 1, 2 y 3.
+ROBOT B = {robot_b}
+- Lado inicial: DERECHO.
+- Color principal.
+- Color secundario, stickers o marcas visibles.
+- Tipo de arma: spinner, flipper, wedge, saw, lifter, drum, horizontal, vertical u otro.
+- Forma del chasis.
+- Número de ruedas visibles y posición aproximada.
+- Piezas externas notables.
+- Marca distintiva principal: característica visual más única.
+- Marca distintiva secundaria: característica útil si la principal se pierde o se oculta.
 
-── CRITERIO 1: AGRESIVIDAD (0–15) ── PESO MAYOR ──
-Mide la iniciativa y efectividad ofensiva total durante el combate.
-
-  15: Dominio ofensivo total, atacó sin cesar, nunca dejó recuperarse al rival.
-  12–14: Mayoría del combate atacando, arma activa y efectiva la mayor parte del tiempo.
-  9–11: Ataques frecuentes pero con pausas notables o arma poco efectiva en algunos momentos.
-  6–8: Ataques esporádicos, más reactivo que proactivo.
-  3–5: Apenas atacó, principalmente evasivo o defensivo.
-  0–2: Sin ataques visibles o completamente inmovilizado.
-
-── CRITERIO 2: CONDICIÓN (0–5) ──
-Estado físico al FINALIZAR el combate, considerando todas las pérdidas de piezas registradas.
-
-  5: Sin daños visibles, todas las piezas presentes, movilidad y arma perfectas.
-  4: Pérdida de piezas menores (tornillo, pequeño panel), funcionalidad completa.
-  3: Pérdida de piezas moderadas o daño estructural visible, funcionalidad levemente afectada.
-  2: Pérdida de piezas importantes (panel grande, parte del arma), movilidad o arma comprometida.
-  1: Pérdida de pieza crítica (rueda, arma completa), apenas funcional.
-  0: Inmovilizado, destruido o sin piezas suficientes para funcionar.
-
-── CRITERIO 3: DAÑO INFLIGIDO (0–10) ──
-Daño visible causado AL OPONENTE, incluyendo cada pieza que le hiciste perder.
-
-  9–10: Causaste inmovilización o pérdida de múltiples piezas críticas al oponente.
-  7–8: Provocaste pérdida de piezas importantes o daños estructurales serios.
-  5–6: Causaste pérdida de piezas menores o deformaciones claras.
-  3–4: Daños menores visibles, sin pérdida de piezas.
-  1–2: Daño apenas perceptible, sin piezas arrancadas.
-  0: Sin daño visible ni piezas perdidas por el oponente.
-
-── CRITERIO 4: CONTROL (0–10) ──
-Dominio del área de combate y capacidad táctica.
-
-  9–10: Control total del arena, empujó o acorraló consistentemente al rival.
-  7–8: Control claro la mayor parte del combate con buen posicionamiento.
-  5–6: Control moderado, momentos de dominio y de pérdida equilibrados.
-  3–4: Control escaso, mayormente fue quien fue maniobrado.
-  1–2: Sin control, siempre a la defensiva o sin dirección táctica.
-  0: Sin control observable.
+REGLA PERMANENTE:
+Desde este punto, identifica a cada robot por sus características físicas, no por su posición actual en pantalla.
 
 ════════════════════════════════════════
-PASO 5 — VERIFICACIÓN CRUZADA ANTES DE RESPONDER
+PASO 2 — RASTREO DE IDENTIDAD DURANTE TODO EL VIDEO
 ════════════════════════════════════════
-Antes de escribir una sola línea de respuesta, confirma las 5 afirmaciones:
 
-  ✔ 1. {robot_a} coincide con las características físicas anotadas en el Paso 1 (ROBOT A).
-  ✔ 2. {robot_b} coincide con las características físicas anotadas en el Paso 1 (ROBOT B).
-  ✔ 3. Cada pieza volando fue asignada al robot correcto usando la marca distintiva.
-  ✔ 4. El GANADOR declarado tiene TOTAL mayor o igual al perdedor.
-  ✔ 5. Los cuatro criterios suman exactamente el TOTAL indicado para cada robot.
+Durante todo el combate, antes de atribuir cualquier acción, daño o punto, confirma la identidad del robot.
 
-Si alguna afirmación falla → vuelve al Paso 1 antes de continuar.
+Si hay confusión, aplica este orden:
 
-Si el video NO muestra un combate de robots, responde únicamente:
+1. ¿Es cuadrado, gris metálico y parece robot observador/cámara?
+   - Sí: es JUEZ BOT. Ignóralo.
+   - No: continúa.
+
+2. ¿Coincide con las marcas visuales de {robot_a}?
+   - Sí: es {robot_a}.
+
+3. ¿Coincide con las marcas visuales de {robot_b}?
+   - Sí: es {robot_b}.
+
+4. Si los robots están cruzados, girados o dañados:
+   - Usa forma del chasis.
+   - Usa arma visible.
+   - Usa ruedas.
+   - Usa colores o stickers.
+   - Usa piezas perdidas previamente.
+   - Usa patrón de movimiento previo.
+
+PROHIBIDO:
+- Prohibido cambiar nombres por la posición actual en pantalla.
+- Prohibido asumir que el robot de la izquierda sigue siendo {robot_a} después del inicio.
+- Prohibido asumir que el robot de la derecha sigue siendo {robot_b} después del inicio.
+- Prohibido atribuir acciones del Juez Bot a un competidor.
+
+════════════════════════════════════════
+PASO 3 — INVENTARIO FÍSICO Y DAÑOS
+════════════════════════════════════════
+
+Analiza el video completo y registra internamente el estado físico de cada competidor.
+
+Para cada robot, observa:
+
+RUEDAS:
+- ¿Todas las ruedas siguen presentes?
+- ¿Alguna rueda se desprende?
+- ¿Alguna rueda deja de girar?
+- ¿Pierde tracción?
+- ¿Se mueve en círculos por daño?
+
+ARMA:
+- ¿El arma funciona durante el combate?
+- ¿Se detiene?
+- ¿Golpea al rival?
+- ¿Se dobla, rompe o desprende?
+- ¿Sigue siendo útil al final?
+
+CHASIS Y ESTRUCTURA:
+- ¿Pierde tapas, paneles, tornillos o partes externas?
+- ¿Hay deformación visible?
+- ¿Hay inclinación, arrastre o piezas colgando?
+- ¿El daño afecta movilidad o ataque?
+
+PIEZAS PERDIDAS:
+Cada vez que veas una pieza volar, caer o separarse, determina:
+- Tiempo aproximado.
+- Robot de origen: {robot_a} o {robot_b}.
+- Tipo de pieza.
+- Si fue causada por golpe del rival, choque contra pared, autodaño o causa incierta.
+- Impacto funcional: menor, moderado, grave o crítico.
+
+REGLA DE INCERTIDUMBRE:
+Si no puedes confirmar de qué robot salió una pieza, no inventes.
+Regístrala como “pieza no atribuible” y no la uses para puntuar daño directo.
+Solo cuenta daño cuando exista evidencia visual razonable.
+
+════════════════════════════════════════
+PASO 4 — ANÁLISIS DEL COMBATE
+════════════════════════════════════════
+
+Evalúa el combate completo considerando únicamente a {robot_a} y {robot_b}.
+
+Analiza:
+
+AGRESIVIDAD:
+- Quién inicia más intercambios.
+- Quién busca contacto con mayor frecuencia.
+- Quién obliga al rival a defenderse.
+- Quién mantiene presión ofensiva.
+- No cuentes movimiento sin intención de ataque.
+- No cuentes como agresividad si un robot solo gira sobre sí mismo sin buscar contacto.
+- No cuentes como agresividad si ambos robots se mueven en su propio entorno sin atacar al rival.
+
+CONDICIÓN:
+- Estado físico final.
+- Daños visibles.
+- Piezas perdidas.
+- Movilidad final.
+- Funcionamiento del arma al cierre.
+
+DAÑO INFLIGIDO:
+- Daño visible causado al rival.
+- Piezas arrancadas al oponente.
+- Daño estructural producido.
+- Pérdida de movilidad o arma causada por ataques.
+- No cuentes autodaño como daño infligido por el rival, salvo que el rival haya provocado directamente la situación.
+- No inventes daño si no existe evidencia visual clara.
+
+CONTROL:
+- Quién domina el centro o zonas útiles de la arena.
+- Quién empuja, acorrala o dirige al rival.
+- Quién mantiene mejor orientación.
+- Quién logra mejores posiciones de ataque.
+- Quién evita quedar atrapado o descontrolado.
+- No cuentes como control si el robot solo gira en su propio lugar sin dirigir al rival.
+- No cuentes como control si ambos robots permanecen separados, girando o moviéndose sin interacción efectiva.
+
+════════════════════════════════════════
+PASO 5 — SISTEMA DE PUNTUACIÓN
+════════════════════════════════════════
+
+Puntúa con números enteros.
+
+CRITERIO 1: AGRESIVIDAD — 0 a 15 puntos
+
+15: Dominio ofensivo total durante casi todo el combate.
+12-14: Atacó más y mantuvo presión clara la mayor parte del tiempo.
+9-11: Atacó con frecuencia, pero con pausas o efectividad media.
+6-8: Ataques esporádicos o combate equilibrado con poca iniciativa.
+3-5: Principalmente defensivo, evasivo o con muy poca búsqueda de contacto.
+0-2: Casi sin ataques, sin capacidad ofensiva visible o girando sin atacar.
+
+CRITERIO 2: CONDICIÓN — 0 a 5 puntos
+
+5: Sin daños visibles; movilidad y arma funcionales.
+4: Daños menores sin afectar funcionamiento.
+3: Daños moderados con leve afectación.
+2: Daños importantes; movilidad o arma comprometida.
+1: Daño crítico; apenas funcional.
+0: Inmóvil, destruido o sin capacidad funcional al final.
+
+CRITERIO 3: DAÑO INFLIGIDO — 0 a 10 puntos
+
+9-10: Provocó daño crítico, pérdida de movilidad, arma o varias piezas importantes.
+7-8: Provocó daño estructural serio o pérdida de piezas importantes.
+5-6: Provocó piezas menores desprendidas o deformaciones claras.
+3-4: Provocó daño visible leve.
+1-2: Daño apenas perceptible.
+0: Sin daño visible causado al rival.
+
+CRITERIO 4: CONTROL — 0 a 10 puntos
+
+9-10: Controló claramente la arena y la posición del rival.
+7-8: Control superior durante la mayor parte del combate.
+5-6: Control equilibrado o alternado.
+3-4: Control limitado; frecuentemente fue desplazado.
+1-2: Casi sin control táctico.
+0: Sin control observable o solo movimiento/giro sin dominio del rival.
+
+TOTAL MÁXIMO POR ROBOT = 40 puntos.
+
+════════════════════════════════════════
+PASO 6 — REGLA DE GANADOR O EMPATE
+════════════════════════════════════════
+
+El ganador debe ser el robot con mayor TOTAL.
+
+TOTAL = Agresividad + Condición + Daño + Control.
+
+REGLA PRINCIPAL:
+- Si {robot_a} tiene mayor TOTAL, declara ganador a {robot_a}.
+- Si {robot_b} tiene mayor TOTAL, declara ganador a {robot_b}.
+- No declares EMPATE solo porque el combate parezca parejo.
+- No declares EMPATE solo porque ambos robots tengan pocos golpes.
+- No declares EMPATE si existe cualquier ventaja visible en agresividad, daño, control o condición.
+
+DESEMPATE OBLIGATORIO:
+Si ambos robots tienen el mismo TOTAL, NO declares empate inmediatamente.
+Primero aplica este orden de desempate:
+
+1. Gana el robot que causó más daño visible.
+2. Si el daño es igual, gana el robot con mayor agresividad.
+3. Si la agresividad es igual, gana el robot con mayor control.
+4. Si el control es igual, gana el robot con mejor condición final.
+5. Solo si todos los criterios anteriores son iguales y no hubo combate efectivo, puede declararse EMPATE.
+
+CUÁNDO DECLARAR EMPATE:
+Declara EMPATE únicamente si se cumplen TODAS estas condiciones:
+
+1. Ambos robots tienen el mismo TOTAL.
+2. Ambos robots tienen 0 puntos en Daño Infligido.
+3. Ningún robot realizó golpes claros o contactos efectivos.
+4. Ningún robot empujó, acorraló o dominó al rival.
+5. Ningún robot tuvo mayor iniciativa ofensiva.
+6. Ambos robots conservaron una condición final similar.
+7. Ambos robots pasaron la mayor parte del combate separados, girando sobre sí mismos o moviéndose sin atacar.
+
+REGLA ESPECIAL DE GIRO:
+Si ambos robots giran en su propio entorno, pero uno de ellos intenta atacar, avanza hacia el rival, toca al rival, empuja o genera presión, NO es empate.
+En ese caso, gana el robot con mayor agresividad o control.
+
+EMPATE SOLO EN COMBATE NULO:
+El EMPATE solo debe usarse cuando el combate fue prácticamente nulo:
+- Sin golpes.
+- Sin contacto efectivo.
+- Sin daño visible.
+- Sin control.
+- Sin presión ofensiva.
+- Ambos robots girando o moviéndose sin interactuar de forma útil.
+
+REGLAS ABSOLUTAS:
+- El empate es una opción excepcional, no una opción común.
+- Si hay cualquier diferencia visible entre los robots, declara ganador.
+- Si un robot ataca más, gana ese robot.
+- Si un robot controla más, gana ese robot.
+- Si un robot causa más daño, gana ese robot.
+- Si un robot termina en mejor condición, puede ganar si los demás criterios son iguales.
+- Nunca declares ganador al Juez Bot.
+- Nunca declares ganador por KO.
+- Nunca declares ganador si su TOTAL es menor que el rival.
+
+════════════════════════════════════════
+PASO 7 — VERIFICACIÓN FINAL OBLIGATORIA
+════════════════════════════════════════
+
+Antes de responder, verifica internamente:
+
+1. {robot_a} mantiene la identidad visual del robot que inició a la izquierda.
+2. {robot_b} mantiene la identidad visual del robot que inició a la derecha.
+3. El Juez Bot cuadrado gris metálico fue ignorado completamente.
+4. No se contaron golpes contra el Juez Bot.
+5. No se asignaron piezas del Juez Bot a ningún competidor.
+6. Cada pieza perdida fue atribuida solo si había evidencia visual suficiente.
+7. Los puntos son números enteros.
+8. El TOTAL de cada robot es la suma exacta de los cuatro criterios.
+9. El GANADOR coincide con el TOTAL final. Si los puntos son iguales, se aplicó desempate obligatorio por Daño, Agresividad, Control y Condición. Solo se declaró EMPATE si el combate fue prácticamente nulo.
+10. El resumen coincide con la puntuación final.
+
+Si alguna verificación falla, corrige la respuesta antes de entregarla.
+
+Si el video no muestra un combate de robots, responde únicamente:
 ERROR: No es un combate de robots.
 
 ════════════════════════════════════════
-FORMATO DE RESPUESTA (sin Markdown, sin texto adicional, sin variaciones)
+FORMATO DE RESPUESTA
 ════════════════════════════════════════
 
+Responde exactamente con esta estructura.
+No uses Markdown.
+No agregues texto antes ni después.
+
 IDENTIFICACIÓN:
-{robot_a}: [color, forma, arma, marca distintiva] | Estado final: [descripción breve]
-{robot_b}: [color, forma, arma, marca distintiva] | Estado final: [descripción breve]
+{robot_a}: [color, forma, arma, marca distintiva] | Estado final: [estado físico y funcional breve]
+{robot_b}: [color, forma, arma, marca distintiva] | Estado final: [estado físico y funcional breve]
 
 PIEZAS PERDIDAS:
-{robot_a}: [lista cada pieza perdida con momento aproximado, o "ninguna"]
-{robot_b}: [lista cada pieza perdida con momento aproximado, o "ninguna"]
+{robot_a}: [pieza, momento aproximado e impacto; o "ninguna confirmada"]
+{robot_b}: [pieza, momento aproximado e impacto; o "ninguna confirmada"]
 
 RESUMEN:
-[Exactamente 5 líneas. Describe el desarrollo técnico: iniciativa, momentos decisivos,
-piezas perdidas clave y estado al cierre. No uses adjetivos vagos como "intensa".]
+[Línea 1: quién tuvo mayor iniciativa ofensiva o si fue equilibrada]
+[Línea 2: acciones o contactos más importantes, o indicar si no hubo contacto efectivo]
+[Línea 3: daños o piezas perdidas confirmadas]
+[Línea 4: comparación de control y movilidad]
+[Línea 5: razón técnica de la decisión final o del empate]
 
-GANADOR: [nombre exacto de {robot_a} o {robot_b}]
+GANADOR: [nombre exacto de {robot_a}, nombre exacto de {robot_b} o EMPATE]
 
 PUNTUACIÓN:
 {robot_a} | Agresividad: N | Condición: N | Daño: N | Control: N | TOTAL: N
 {robot_b} | Agresividad: N | Condición: N | Daño: N | Control: N | TOTAL: N
 
-REGLAS DE FORMATO:
-- Solo números enteros en los criterios.
-- TOTAL = suma exacta de los cuatro criterios. Verifica antes de escribir.
-- No modifiques el orden ni la estructura del formato.
-- No intercambies jamás {robot_a} y {robot_b}.
-- No añadas texto fuera del formato indicado.
+REGLAS FINALES:
+- Declara EMPATE únicamente si ambos robots tienen el mismo TOTAL, ambos tienen 0 en Daño, no hubo golpes claros, no hubo contacto efectivo, no hubo control, no hubo presión ofensiva y ambos solo giraron o se movieron sin atacar.
+- Si hay un ganador por mayor TOTAL o por mejor desempeño visible, escribe el nombre exacto del robot ganador.
+- Si hay empate en puntos, aplica primero desempate por Daño, Agresividad, Control y Condición.
+- No uses decimales.
+- No inventes piezas perdidas.
+- No inventes daño si no es visible.
+- No confundas posición actual con identidad inicial.
+- No evalúes al Juez Bot.
+- No expliques fuera del formato solicitado.
 """

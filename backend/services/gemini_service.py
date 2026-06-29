@@ -41,10 +41,10 @@ def analyze_video(
         img_bi_b64, img_bi_type
     )
 
-    # ── BLOQUE 2: prompt con instrucciones ──
+    
     parts.append({"text": crear_prompt(robot_a, robot_b)})
 
-    # ── BLOQUE 3: video del combate ──
+    
     parts.append({
         "inline_data": {
             "mime_type": mime,

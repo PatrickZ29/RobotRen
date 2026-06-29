@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juez Logit</title>
+    <title>Juez Bot</title>
 
     <style>
         :root {
@@ -252,30 +252,45 @@
             white-space: pre-wrap;
         }
 
+        /* --- MEJORAS CRÍTICAS PARA LA TABLA DEL HISTORIAL --- */
         .table-container {
             margin-top: 20px;
             display: none;
             border: 1px solid var(--border);
             border-radius: 10px;
-            overflow: hidden;
+            overflow-x: auto; /* Permite scroll horizontal interno solo si el contenido es extremadamente masivo */
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             background: rgba(15, 23, 42, 0.4);
+            table-layout: fixed; /* Fuerza a las columnas a respetar proporciones estrictas */
         }
+
+        /* Definimos anchos fijos proporcionales para que las columnas A, B y Tiempo no colapsen */
+        th:nth-child(1), td:nth-child(1) { width: 15%; }
+        th:nth-child(2), td:nth-child(2) { width: 15%; }
+        th:nth-child(3), td:nth-child(3) { width: 55%; } /* La columna Ganador/Detalles se lleva el espacio mayor */
+        th:nth-child(4), td:nth-child(4) { width: 15%; }
 
         th, td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            white-space: normal; /* Permite saltos de línea automáticos */
+            word-break: break-word; /* Rompe cadenas excesivamente largas si no tienen espacios */
+            vertical-align: top; /* Mantiene la alineación arriba si un renglón es muy largo */
         }
 
         th {
             background: rgba(0, 0, 0, 0.3);
             color: var(--text-dim);
             font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: bold;
         }
 
         .error {
@@ -299,6 +314,12 @@
             .winner-name {
                 font-size: 2rem;
             }
+            
+            /* Ajuste de proporciones en móviles */
+            th:nth-child(1), td:nth-child(1) { width: 20%; }
+            th:nth-child(2), td:nth-child(2) { width: 20%; }
+            th:nth-child(3), td:nth-child(3) { width: 45%; }
+            th:nth-child(4), td:nth-child(4) { width: 15%; }
         }
     </style>
 
@@ -395,7 +416,7 @@
                     tbody.innerHTML = "";
 
                     if (data.length === 0) {
-                        tbody.innerHTML = "<tr><td colspan='4'>No hay datos</td></tr>";
+                        tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>No hay datos</td></tr>";
                         return;
                     }
 
@@ -404,7 +425,7 @@
                             <tr>
                                 <td>${item.robot_a}</td>
                                 <td>${item.robot_b}</td>
-                                <td style="color:var(--accent-green); font-weight:bold;">
+                                <td style="color:var(--accent-green);">
                                     ${item.ganador}
                                 </td>
                                 <td>${item.tiempo}s</td>
@@ -460,14 +481,9 @@
 
             if (form) {
                 form.addEventListener("submit", function () {
-                    // Detener consultas automáticas mientras se analiza.
                     detenerMonitoreo();
-
-                    // Evitar doble envío.
                     btn.disabled = true;
                     btn.innerText = "Analizando...";
-
-                    // Limpiar formulario al recargar la página.
                     sessionStorage.setItem("limpiarFormulario", "true");
                 });
             }
@@ -481,7 +497,7 @@
 
 <body>
 <div class="container">
-    <h1>Juez Logit</h1>
+    <h1>Juez Bot</h1>
 
     <div class="status-container">
         <div class="status-bar">
