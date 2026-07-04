@@ -1,40 +1,38 @@
-from fastapi import APIRouter, UploadFile, File, Form, Request
-from fastapi.templating import Jinja2Templates
-import shutil
-import os
+from pathlib import Path
 import base64
+import os
+import shutil
 from datetime import datetime
 
+from fastapi import APIRouter, UploadFile, File, Form, Request
+from fastapi.templating import Jinja2Templates
+
+from config import BASE_DIR, VIDEO_FOLDER
+from database import save_analysis, get_historial
 from services.gemini_service import analyze_video
 from services.parser_service import parse_result
-from database import save_analysis, get_historial
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
-# Variables globales
 LAST_VIDEO_TIME = None
 LAST_VIDEO_NAME = None
-
 IS_RECORDING = False
 IS_PAUSED = False
 
-# Crear carpeta de videos si no existe
-os.makedirs("videos", exist_ok=True)
-
+VIDEO_DIR = Path(VIDEO_FOLDER)
+VIDEO_DIR.mkdir(parents=True, exist_ok=True)
 
 
 @router.get("/check_status")
 def check_status():
-    global LAST_VIDEO_TIME, LAST_VIDEO_NAME
-
     if LAST_VIDEO_TIME is None:
         return {"ready": False}
 
     return {
         "ready": True,
         "video": LAST_VIDEO_NAME,
-        "hora": LAST_VIDEO_TIME.strftime("%H:%M:%S")
+        "hora": LAST_VIDEO_TIME.strftime("%H:%M:%S"),
     }
 
 
@@ -45,14 +43,10 @@ def start_recording():
     IS_RECORDING = True
     IS_PAUSED = False
 
-    print("Grabación iniciada")
-    print(f"Estado -> recording={IS_RECORDING}, paused={IS_PAUSED}")
-
     return {
         "recording": IS_RECORDING,
-        "paused": IS_PAUSED
+        "paused": IS_PAUSED,
     }
-
 
 
 @router.get("/pause_recording")
@@ -61,38 +55,26 @@ def pause_recording():
 
     if IS_RECORDING and not IS_PAUSED:
         IS_PAUSED = True
-        print("Grabación pausada")
-
-    print(f"Estado -> recording={IS_RECORDING}, paused={IS_PAUSED}")
 
     return {
         "recording": IS_RECORDING,
-        "paused": IS_PAUSED
+        "paused": IS_PAUSED,
     }
 
 
-# =========================
-# REANUDAR GRABACIÓN
-# =========================
 @router.get("/resume_recording")
 def resume_recording():
     global IS_RECORDING, IS_PAUSED
 
     if IS_RECORDING and IS_PAUSED:
         IS_PAUSED = False
-        print("Grabación reanudada")
-
-    print(f"Estado -> recording={IS_RECORDING}, paused={IS_PAUSED}")
 
     return {
         "recording": IS_RECORDING,
-        "paused": IS_PAUSED
+        "paused": IS_PAUSED,
     }
 
 
-# =========================
-# DETENER GRABACIÓN
-# =========================
 @router.get("/stop_recording")
 def stop_recording():
     global IS_RECORDING, IS_PAUSED
@@ -100,64 +82,53 @@ def stop_recording():
     IS_RECORDING = False
     IS_PAUSED = False
 
-    print("Grabación detenida")
-    print(f"Estado -> recording={IS_RECORDING}, paused={IS_PAUSED}")
-
     return {
         "recording": IS_RECORDING,
-        "paused": IS_PAUSED
+        "paused": IS_PAUSED,
     }
-
 
 
 @router.get("/recording_status")
 def recording_status():
     return {
         "recording": IS_RECORDING,
-        "paused": IS_PAUSED
+        "paused": IS_PAUSED,
     }
-
 
 
 @router.post("/upload")
 async def upload_video(video: UploadFile = File(...)):
     global LAST_VIDEO_TIME, LAST_VIDEO_NAME
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"fight_{timestamp}.mp4"
-    path = f"videos/{filename}"
+    filename = f"fight_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
+    path = VIDEO_DIR / filename
 
-    with open(path, "wb") as buffer:
+    with path.open("wb") as buffer:
         shutil.copyfileobj(video.file, buffer)
-
-    print("Video recibido:", filename)
 
     LAST_VIDEO_TIME = datetime.now()
     LAST_VIDEO_NAME = filename
 
-    return {"mensaje": "ok"}
+    return {
+        "mensaje": "ok",
+        "video": filename,
+    }
 
 
-# =========================
-# CONVERTIR ARCHIVO A BASE64
-# =========================
 def file_to_base64(file: UploadFile):
     if file and file.filename:
         data = file.file.read()
         return base64.b64encode(data).decode(), file.content_type
+
     return None, None
 
 
-# =========================
-# ANALIZAR VIDEO E IMÁGENES
-# =========================
 @router.post("/analyze")
 async def analyze(
     request: Request,
     robot_a: str = Form(...),
     robot_b: str = Form(...),
     video: UploadFile = File(None),
-
     img_a_inicio: UploadFile = File(None),
     img_a_final: UploadFile = File(None),
     img_b_inicio: UploadFile = File(None),
@@ -166,119 +137,120 @@ async def analyze(
     global LAST_VIDEO_NAME, LAST_VIDEO_TIME
 
     try:
-        # Si el usuario sube un video manualmente,
-        # desactivar cualquier video detectado automáticamente en la Raspberry.
         if video and video.filename:
             LAST_VIDEO_NAME = None
             LAST_VIDEO_TIME = None
 
             filename = f"fight_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
-            path = f"videos/{filename}"
+            path = VIDEO_DIR / filename
 
-            with open(path, "wb") as buffer:
+            with path.open("wb") as buffer:
                 shutil.copyfileobj(video.file, buffer)
 
-            print("Video subido desde web:", filename)
-
-        # Si no, usar el último video disponible
         else:
-            videos = sorted(os.listdir("videos"))
+            videos = sorted(VIDEO_DIR.glob("*.mp4"), key=os.path.getmtime)
 
             if not videos:
                 raise Exception("No hay videos disponibles")
 
-            filename = videos[-1]
-            path = f"videos/{filename}"
-
-            print("Usando video existente:", filename)
+            path = videos[-1]
+            filename = path.name
 
     except Exception as e:
         return templates.TemplateResponse(
+            request,
             "index.html",
             {
                 "request": request,
-                "error": f"Error con el video: {str(e)}"
-            }
+                "error": f"Error con el video: {str(e)}",
+            },
         )
 
-    # Convertir imágenes a base64
     img_ai_b64, img_ai_type = file_to_base64(img_a_inicio)
     img_af_b64, img_af_type = file_to_base64(img_a_final)
     img_bi_b64, img_bi_type = file_to_base64(img_b_inicio)
     img_bf_b64, img_bf_type = file_to_base64(img_b_final)
 
-    # Analizar video con Gemini
     result, tiempo = analyze_video(
-        path,
+        str(path),
         "video/mp4",
         robot_a,
         robot_b,
-        img_ai_b64, img_ai_type,
-        img_af_b64, img_af_type,
-        img_bi_b64, img_bi_type,
-        img_bf_b64, img_bf_type
+        img_ai_b64,
+        img_ai_type,
+        img_af_b64,
+        img_af_type,
+        img_bi_b64,
+        img_bi_type,
+        img_bf_b64,
+        img_bf_type,
     )
 
-    # Validar respuesta
     if result is None:
         return templates.TemplateResponse(
+            request,
             "index.html",
             {
                 "request": request,
-                "error": "Error al procesar el video con Gemini"
-            }
+                "error": "Error al procesar el video con Gemini",
+            },
         )
 
     if isinstance(result, dict) and "error" in result:
         return templates.TemplateResponse(
+            request,
             "index.html",
             {
                 "request": request,
-                "error": str(result)
-            }
+                "error": str(result),
+            },
         )
 
-    # Extraer texto
     try:
         texto = result["candidates"][0]["content"]["parts"][0]["text"]
     except Exception:
         return templates.TemplateResponse(
+            request,
             "index.html",
             {
                 "request": request,
-                "error": "Respuesta inválida de Gemini"
-            }
+                "error": "Respuesta inválida de Gemini",
+            },
         )
 
-    # Parsear resultado
     parsed = parse_result(texto, robot_a, robot_b)
+    ganador = parsed.get("ganador", "No definido")
 
-    # Guardar en base de datos
     try:
-        save_analysis(path, robot_a, robot_b, texto, tiempo)
+        save_analysis(filename, robot_a, robot_b, ganador, tiempo)
     except Exception as e:
-        print("Error guardando:", e)
+        print(f"Error guardando en BD: {e}")
 
-    # Limpiar estado del último video para que
-    # no siga apareciendo en la interfaz
     LAST_VIDEO_NAME = None
     LAST_VIDEO_TIME = None
 
-    # Mostrar resultado
     return templates.TemplateResponse(
+        request,
         "index.html",
         {
             "request": request,
-            "ganador": parsed.get("ganador", "No definido"),
+            "ganador": ganador,
             "response": texto,
-            "tiempo": tiempo
-        }
+            "tiempo": tiempo,
+        },
     )
 
 
-# =========================
-# HISTORIAL
-# =========================
 @router.get("/historial")
 def historial():
-    return get_historial()
+    try:
+        return get_historial()
+    except Exception as e:
+        return [
+            {
+                "robot_a": "-",
+                "robot_b": "-",
+                "ganador": f"Error BD: {e}",
+                "tiempo": "-",
+            }
+        ]
